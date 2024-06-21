@@ -1,0 +1,12 @@
+
+# name: test/sql/resting_duck.test
+# description: test resting_duck extension
+# group: [resting_duck]
+
+require resting_duck
+
+query I
+CALL JSON_RESULT('SELECT 2');
+----
+"SELECT 2"
+

@@ -72,18 +72,18 @@ public:
 
 private:
   // ReSharper disable once CppPassValueParameterByConstReference
-  string SerializeInternal(unique_ptr<QueryResult> result) {
-    char *json_str = yyjson_mut_write(doc, 0, nullptr);
+  string SerializeInternal(unique_ptr<QueryResult> query_result) {
 
-    auto chunk = result->Fetch();
-    auto names = result->names;
-    auto types = result->types;
+    auto chunk = query_result->Fetch();
+    auto names = query_result->names;
+    auto types = query_result->types;
     while (chunk) {
       SerializeChunk(*chunk, names, types);
 
-      chunk = result->Fetch();
+      chunk = query_result->Fetch();
     }
 
+    char *json_str = yyjson_mut_write(doc, 0, nullptr);
     if (!json_str) {
       throw InternalException("Could not serialize yyjson document");
     }
