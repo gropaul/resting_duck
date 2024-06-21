@@ -22,7 +22,7 @@ void RestingDuckExtension::Load(DuckDB &db) {
 }
 
 void RestingDuckExtension::RegisterTableFunctions(Catalog &catalog,
-                                            ClientContext &context) {
+                                                  ClientContext &context) {
   const TableFunction tf(JSON_RESULT, {LogicalTypeId::VARCHAR}, JsonResultTf,
                          JsonResultFunctionDataBind,
                          JsonResultTableFunctionState::Init);

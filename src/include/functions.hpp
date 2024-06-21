@@ -27,8 +27,7 @@ struct JsonResultTableFunctionState final : GlobalTableFunctionState {
 };
 
 inline unique_ptr<FunctionData>
-JsonResultFunctionDataBind(ClientContext &,
-                           TableFunctionBindInput &input,
+JsonResultFunctionDataBind(ClientContext &, TableFunctionBindInput &input,
                            vector<LogicalType> &types, vector<string> &names) {
   auto function_data =
       make_uniq<JsonResultFunction>(input.inputs[0].GetValue<string>());
