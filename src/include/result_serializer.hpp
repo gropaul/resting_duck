@@ -116,8 +116,8 @@ private:
       for (idx_t col_idx = 0; col_idx < column_count; col_idx++) {
 
         auto value = chunk.GetValue(col_idx, row_idx);
-        auto& name = names[col_idx];
-        auto& type = types[col_idx];
+        auto &name = names[col_idx];
+        auto &type = types[col_idx];
         SerializeValue(obj, value, name, type);
       }
       if (!yyjson_mut_arr_append(root, obj)) {
@@ -150,13 +150,10 @@ private:
     case LogicalTypeId::INTEGER_LITERAL:
       val = yyjson_mut_int(doc, value.GetValue<int64_t>());
       break;
-    case LogicalTypeId::BIT:
     case LogicalTypeId::UTINYINT:
     case LogicalTypeId::USMALLINT:
     case LogicalTypeId::UINTEGER:
     case LogicalTypeId::UBIGINT:
-    case LogicalTypeId::UHUGEINT:
-    case LogicalTypeId::HUGEINT:
       val = yyjson_mut_uint(doc, value.GetValue<uint64_t>());
       break;
     case LogicalTypeId::FLOAT:
@@ -187,6 +184,12 @@ private:
       val = yyjson_mut_str(doc, uuid.c_str());
       break;
     }
+      // Weird special types that are jus serialized to string
+    case LogicalTypeId::INTERVAL:
+    case LogicalTypeId::BLOB:
+    case LogicalTypeId::BIT:
+      val = yyjson_mut_str(doc, value.ToString().c_str());
+      break;
       // Not implemented types
     case LogicalTypeId::LIST:
     case LogicalTypeId::STRUCT:
@@ -195,13 +198,13 @@ private:
     case LogicalTypeId::UNION:
       throw InternalException("Type " + type.ToString() + " not implemented");
       // Unsupported types
+    case LogicalTypeId::UHUGEINT:
+    case LogicalTypeId::HUGEINT:
     case LogicalTypeId::TABLE:
     case LogicalTypeId::POINTER:
     case LogicalTypeId::VALIDITY:
     case LogicalTypeId::AGGREGATE_STATE:
     case LogicalTypeId::LAMBDA:
-    case LogicalTypeId::INTERVAL:
-    case LogicalTypeId::BLOB:
     case LogicalTypeId::USER:
     case LogicalTypeId::ANY:
     case LogicalTypeId::UNKNOWN:
