@@ -2,76 +2,57 @@
 #include "duckdb/common/types/uuid.hpp"
 #include "duckdb/main/query_result.hpp"
 #include "yyjson.hpp"
-#include <iostream>
 
 namespace duckdb {
 using namespace duckdb_yyjson;
 
 class SerializationResult {
 public:
-  virtual ~SerializationResult() = default;
+  virtual ~SerializationResult() { yyjson_mut_doc_free(doc); }
   virtual bool IsSuccess() = 0;
-  string GetSerialized() {
-    char *json_str = yyjson_mut_write(GetDoc(), 0, nullptr);
-    string result_str;
-    if (json_str) {
-      result_str = json_str;
-      free(json_str);
-    } else {
-      std::cerr << "Failed to serialize error" << std::endl;
-    }
-
-    return result_str;
-  }
+  virtual string WithSuccessField() = 0;
+  virtual string Raw() = 0;
 
   template <class TARGET> TARGET &Cast() {
     DynamicCastCheck<TARGET>(this);
     return reinterpret_cast<TARGET &>(*this);
   }
 
-protected:
-  virtual yyjson_mut_doc *GetDoc() = 0;
+private:
+  yyjson_mut_doc *doc = yyjson_mut_doc_new(nullptr);
+  yyjson_mut_val *root = yyjson_mut_obj(doc);
 };
 
 class SerializationSuccess final : public SerializationResult {
 public:
   explicit SerializationSuccess(string serialized)
-      : serialized(std::move(serialized)) {
-    yyjson_mut_obj_add_bool(doc, root, "success", true);
-    yyjson_mut_obj_add_str(doc, root, "data", serialized.c_str());
-  }
+      : serialized(std::move(serialized)) {}
 
   bool IsSuccess() override { return true; }
 
-protected:
-  yyjson_mut_doc *GetDoc() override { return doc; }
+  string Raw() override { return serialized; }
+
+  string WithSuccessField() override {
+    return R"({"success": true, "data": )" + serialized + "}";
+  }
 
 private:
-  yyjson_mut_doc *doc = yyjson_mut_doc_new(nullptr);
-  yyjson_mut_val *root = yyjson_mut_obj(doc);
-
   string serialized;
 };
 
 class SerializationError final : public SerializationResult {
 public:
-  explicit SerializationError(string message) : message(std::move(message)) {
-    yyjson_mut_obj_add_bool(doc, root, "success", false);
-    yyjson_mut_obj_add_str(doc, root, "message", message.c_str());
-  }
-
-  ~SerializationError() override { yyjson_mut_doc_free(doc); }
+  explicit SerializationError(string message) : message(std::move(message)) {}
 
   bool IsSuccess() override { return false; }
 
-protected:
-  yyjson_mut_doc *GetDoc() override { return doc; }
+  string Raw() override { return message; }
+  string WithSuccessField() override {
+    return R"({"success": false, "message": ")" + message + "\"}";
+  }
 
 private:
   string message;
-
-  yyjson_mut_doc *doc = yyjson_mut_doc_new(nullptr);
-  yyjson_mut_val *root = yyjson_mut_obj(doc);
 };
 
 class ResultSerializer {
@@ -104,7 +85,7 @@ private:
     }
 
     if (!json_str) {
-      throw std::runtime_error("Could not serialize yyjson document");
+      throw InternalException("Could not serialize yyjson document");
     }
 
     string result_str = json_str;
