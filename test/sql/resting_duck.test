@@ -5,8 +5,11 @@
 
 require resting_duck
 
-query I
+statement ok
+PRAGMA enable_verification
+
+query II
 CALL JSON_RESULT('SELECT 2');
 ----
-"SELECT 2"
+1	[{"2":2}]
 

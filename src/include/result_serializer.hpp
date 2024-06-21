@@ -1,26 +1,27 @@
 #pragma once
+
 #include "duckdb/common/types/uuid.hpp"
 #include "duckdb/main/query_result.hpp"
 #include "yyjson.hpp"
+
+#include <iostream>
 
 namespace duckdb {
 using namespace duckdb_yyjson;
 
 class SerializationResult {
 public:
-  virtual ~SerializationResult() { yyjson_mut_doc_free(doc); }
+  virtual ~SerializationResult() = default;
   virtual bool IsSuccess() = 0;
   virtual string WithSuccessField() = 0;
   virtual string Raw() = 0;
+
+  void Print() { std::cerr << WithSuccessField() << std::endl; }
 
   template <class TARGET> TARGET &Cast() {
     DynamicCastCheck<TARGET>(this);
     return reinterpret_cast<TARGET &>(*this);
   }
-
-private:
-  yyjson_mut_doc *doc = yyjson_mut_doc_new(nullptr);
-  yyjson_mut_val *root = yyjson_mut_obj(doc);
 };
 
 class SerializationSuccess final : public SerializationResult {
@@ -57,6 +58,14 @@ private:
 
 class ResultSerializer {
 public:
+  ResultSerializer() {
+    doc = yyjson_mut_doc_new(nullptr);
+    root = yyjson_mut_arr(doc);
+    if (!root) {
+      throw InternalException("Could not create yyjson array");
+    }
+    yyjson_mut_doc_set_root(doc, root);
+  }
   unique_ptr<SerializationResult> result;
 
   ~ResultSerializer() { yyjson_mut_doc_free(doc); }
@@ -107,17 +116,20 @@ private:
       for (idx_t col_idx = 0; col_idx < column_count; col_idx++) {
 
         auto value = chunk.GetValue(col_idx, row_idx);
-        auto name = names[col_idx];
-        auto type = types[col_idx];
+        auto& name = names[col_idx];
+        auto& type = types[col_idx];
         SerializeValue(obj, value, name, type);
       }
-      yyjson_mut_arr_add_val(root, obj);
+      if (!yyjson_mut_arr_append(root, obj)) {
+        throw InternalException("Could not add object to yyjson array");
+      }
     }
   }
 
   // ReSharper disable once CppMemberFunctionMayBeConst
   void SerializeValue(yyjson_mut_val *parent, const Value &value,
                       optional_ptr<string> name, const LogicalType &type) {
+    yyjson_mut_val *val = nullptr;
 
     if (value.IsNull()) {
       goto null_handle;
@@ -126,31 +138,17 @@ private:
     switch (type.id()) {
     case LogicalTypeId::SQLNULL:
     null_handle:
-      if (name) {
-        yyjson_mut_obj_add_null(doc, parent, name->c_str());
-      } else {
-        yyjson_mut_arr_add_null(doc, parent);
-      }
+      val = yyjson_mut_null(doc);
       break;
     case LogicalTypeId::BOOLEAN:
-      if (name) {
-        yyjson_mut_obj_add_bool(doc, parent, name->c_str(),
-                                value.GetValue<bool>());
-      } else {
-        yyjson_mut_arr_add_bool(doc, parent, value.GetValue<bool>());
-      }
+      val = yyjson_mut_bool(doc, value.GetValue<bool>());
       break;
     case LogicalTypeId::TINYINT:
     case LogicalTypeId::SMALLINT:
     case LogicalTypeId::INTEGER:
     case LogicalTypeId::BIGINT:
     case LogicalTypeId::INTEGER_LITERAL:
-      if (name) {
-        yyjson_mut_obj_add_int(doc, parent, name->c_str(),
-                               value.GetValue<int64_t>());
-      } else {
-        yyjson_mut_arr_add_int(doc, parent, value.GetValue<int64_t>());
-      }
+      val = yyjson_mut_int(doc, value.GetValue<int64_t>());
       break;
     case LogicalTypeId::BIT:
     case LogicalTypeId::UTINYINT:
@@ -159,22 +157,12 @@ private:
     case LogicalTypeId::UBIGINT:
     case LogicalTypeId::UHUGEINT:
     case LogicalTypeId::HUGEINT:
-      if (name) {
-        yyjson_mut_obj_add_uint(doc, parent, name->c_str(),
-                                value.GetValue<uint64_t>());
-      } else {
-        yyjson_mut_arr_add_uint(doc, parent, value.GetValue<uint64_t>());
-      }
+      val = yyjson_mut_uint(doc, value.GetValue<uint64_t>());
       break;
     case LogicalTypeId::FLOAT:
     case LogicalTypeId::DOUBLE:
     case LogicalTypeId::DECIMAL:
-      if (name) {
-        yyjson_mut_obj_add_real(doc, parent, name->c_str(),
-                                value.GetValue<double>());
-      } else {
-        yyjson_mut_arr_add_real(doc, parent, value.GetValue<double>());
-      }
+      val = yyjson_mut_real(doc, value.GetValue<double>());
       break;
       // Data + time
     case LogicalTypeId::DATE:
@@ -191,21 +179,12 @@ private:
     case LogicalTypeId::CHAR:
     case LogicalTypeId::VARCHAR:
     case LogicalTypeId::STRING_LITERAL:
-      if (name) {
-        yyjson_mut_obj_add_str(doc, parent, name->c_str(),
-                               value.GetValue<string>().c_str());
-      } else {
-        yyjson_mut_arr_add_str(doc, parent, value.GetValue<string>().c_str());
-      }
+      val = yyjson_mut_str(doc, value.GetValue<string>().c_str());
       break;
     case LogicalTypeId::UUID: {
       const auto uuid_int = value.GetValue<uhugeint_t>();
       const auto uuid = UUID::ToString(uuid_int);
-      if (name) {
-        yyjson_mut_obj_add_str(doc, parent, name->c_str(), uuid.c_str());
-      } else {
-        yyjson_mut_arr_add_str(doc, parent, uuid.c_str());
-      }
+      val = yyjson_mut_str(doc, uuid.c_str());
       break;
     }
       // Not implemented types
@@ -214,7 +193,7 @@ private:
     case LogicalTypeId::MAP: // Apparentely a list of structs...
     case LogicalTypeId::ARRAY:
     case LogicalTypeId::UNION:
-      throw std::runtime_error("Type " + type.ToString() + " not implemented");
+      throw InternalException("Type " + type.ToString() + " not implemented");
       // Unsupported types
     case LogicalTypeId::TABLE:
     case LogicalTypeId::POINTER:
@@ -227,11 +206,24 @@ private:
     case LogicalTypeId::ANY:
     case LogicalTypeId::UNKNOWN:
     case LogicalTypeId::INVALID:
-      throw std::runtime_error("Type " + type.ToString() + " not supported");
+      throw InternalException("Type " + type.ToString() + " not supported");
+    }
+
+    D_ASSERT(val);
+    if (!name) {
+      if (!yyjson_mut_arr_append(parent, val)) {
+        throw InternalException("Could not add value to yyjson array");
+      }
+    } else {
+      yyjson_mut_val *key = yyjson_mut_str(doc, name->c_str());
+      D_ASSERT(key);
+      if (!yyjson_mut_obj_add(parent, key, val)) {
+        throw InternalException("Could not add value to yyjson object");
+      }
     }
   }
 
-  yyjson_mut_doc *doc = yyjson_mut_doc_new(nullptr);
-  yyjson_mut_val *root = yyjson_mut_arr(doc);
+  yyjson_mut_doc *doc;
+  yyjson_mut_val *root;
 };
 } // namespace duckdb
