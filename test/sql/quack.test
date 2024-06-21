@@ -3,6 +3,18 @@
 # group: [quack]
 
 # Before we load the extension, this will fail
+
+require json
+
+statement ok
+PRAGMA enable_verification
+
+query I
+SELECT json_serialize_sql('SELECT 2');
+----
+"SELECT 2"
+
+
 statement error
 SELECT quack('Sam');
 ----
