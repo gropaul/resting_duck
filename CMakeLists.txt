@@ -14,6 +14,7 @@ set(LOADABLE_EXTENSION_NAME ${TARGET_NAME}_loadable_extension)
 
 project(${TARGET_NAME})
 include_directories(src/include)
+add_subdirectory(src)
 
 set(EXTENSION_SOURCES src/resting_duck_extension.cpp src/result_serializer.cpp)
 
