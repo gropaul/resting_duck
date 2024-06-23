@@ -179,13 +179,14 @@ private:
       val = yyjson_mut_strcpy(doc, value.GetValue<string>().c_str());
       break;
     case LogicalTypeId::UUID: {
-      const auto uuid_int = value.GetValue<uhugeint_t>();
+      const auto uuid_int = value.GetValue<hugeint_t>();
       const auto uuid = UUID::ToString(uuid_int);
       val = yyjson_mut_strcpy(doc, uuid.c_str());
       break;
     }
       // Weird special types that are jus serialized to string
     case LogicalTypeId::INTERVAL:
+      // TODO perhaps base64 encode blob?
     case LogicalTypeId::BLOB:
     case LogicalTypeId::BIT:
       val = yyjson_mut_strcpy(doc, value.ToString().c_str());

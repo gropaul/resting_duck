@@ -52,6 +52,9 @@ inline void JsonResultTf(ClientContext &context, TableFunctionInput &data,
   serializer.Serialize(std::move(result));
 
   auto &serialization_result = *serializer.result;
+  if(!serialization_result.IsSuccess()) {
+    throw SerializationException("Failed to serialize result: " + serialization_result.Raw());
+  }
   serialization_result.Print();
   output.SetValue(0, 0, Value(serialization_result.IsSuccess()));
   output.SetValue(1, 0, Value(serialization_result.Raw()));
