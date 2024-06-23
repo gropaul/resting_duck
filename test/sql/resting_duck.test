@@ -15,13 +15,13 @@ CALL JSON_RESULT('SELECT 2');
 statement ok
 CALL JSON_RESULT('FROM test_all_types() SELECT bool');
 
-statement ok 
+statement ok
 CALL JSON_RESULT('FROM test_all_types() SELECT tinyint');
 
 statement ok
 CALL JSON_RESULT('FROM test_all_types() SELECT smallint');
 
-statement ok 
+statement ok
 CALL JSON_RESULT('FROM test_all_types() SELECT int');
 
 statement ok
@@ -30,13 +30,13 @@ CALL JSON_RESULT('FROM test_all_types() SELECT bigint');
 statement ok
 CALL JSON_RESULT('FROM test_all_types() SELECT utinyint');
 
-statement ok 
+statement ok
 CALL JSON_RESULT('FROM test_all_types() SELECT usmallint');
 
 statement ok
 CALL JSON_RESULT('FROM test_all_types() SELECT uint');
 
-statement ok 
+statement ok
 CALL JSON_RESULT('FROM test_all_types() SELECT ubigint');
 
 statement ok
@@ -45,7 +45,7 @@ CALL JSON_RESULT('FROM test_all_types() SELECT date');
 statement ok
 CALL JSON_RESULT('FROM test_all_types() SELECT time');
 
-statement ok 
+statement ok
 CALL JSON_RESULT('FROM test_all_types() SELECT timestamp');
 
 statement ok
@@ -53,23 +53,23 @@ CALL JSON_RESULT('FROM test_all_types() SELECT timestamp_s');
 
 statement ok
 CALL JSON_RESULT('FROM test_all_types() SELECT timestamp_ms');
- 
+
 statement ok
 CALL JSON_RESULT('FROM test_all_types() SELECT timestamp_ns');
 
-statement ok 
+statement ok
 CALL JSON_RESULT('FROM test_all_types() SELECT time_tz');
 
 statement ok
 CALL JSON_RESULT('FROM test_all_types() SELECT timestamp_tz');
 
-statement ok 
+statement ok
 CALL JSON_RESULT('FROM test_all_types() SELECT float');
 
 statement ok
 CALL JSON_RESULT('FROM test_all_types() SELECT double');
 
-statement ok 
+statement ok
 CALL JSON_RESULT('FROM test_all_types() SELECT dec_4_1');
 
 statement ok
@@ -77,29 +77,29 @@ CALL JSON_RESULT('FROM test_all_types() SELECT dec_9_4');
 
 statement ok
 CALL JSON_RESULT('FROM test_all_types() SELECT dec_18_6');
- 
+
 statement ok
 CALL JSON_RESULT('FROM test_all_types() SELECT dec38_10');
 
-statement ok 
+statement ok
 CALL JSON_RESULT('FROM test_all_types() SELECT uuid');
 
-statement ok 
+statement ok
 CALL JSON_RESULT('FROM test_all_types() SELECT interval');
 
-statement ok 
+statement ok
 CALL JSON_RESULT('FROM test_all_types() SELECT varchar');
 
 statement ok
 CALL JSON_RESULT('FROM test_all_types() SELECT blob');
 
-statement ok 
+statement ok
 CALL JSON_RESULT('FROM test_all_types() SELECT bit');
 
 statement ok
 CALL JSON_RESULT('FROM test_all_types() SELECT small_enum');
 
-statement ok 
+statement ok
 CALL JSON_RESULT('FROM test_all_types() SELECT medium_enum');
 
 statement ok

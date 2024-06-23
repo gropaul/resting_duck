@@ -176,19 +176,19 @@ private:
     case LogicalTypeId::CHAR:
     case LogicalTypeId::VARCHAR:
     case LogicalTypeId::STRING_LITERAL:
-      val = yyjson_mut_str(doc, value.GetValue<string>().c_str());
+      val = yyjson_mut_strcpy(doc, value.GetValue<string>().c_str());
       break;
     case LogicalTypeId::UUID: {
       const auto uuid_int = value.GetValue<uhugeint_t>();
       const auto uuid = UUID::ToString(uuid_int);
-      val = yyjson_mut_str(doc, uuid.c_str());
+      val = yyjson_mut_strcpy(doc, uuid.c_str());
       break;
     }
       // Weird special types that are jus serialized to string
     case LogicalTypeId::INTERVAL:
     case LogicalTypeId::BLOB:
     case LogicalTypeId::BIT:
-      val = yyjson_mut_str(doc, value.ToString().c_str());
+      val = yyjson_mut_strcpy(doc, value.ToString().c_str());
       break;
       // Not implemented types
     case LogicalTypeId::LIST:
@@ -218,7 +218,7 @@ private:
         throw InternalException("Could not add value to yyjson array");
       }
     } else {
-      yyjson_mut_val *key = yyjson_mut_str(doc, name->c_str());
+      yyjson_mut_val *key = yyjson_mut_strcpy(doc, name->c_str());
       D_ASSERT(key);
       if (!yyjson_mut_obj_add(parent, key, val)) {
         throw InternalException("Could not add value to yyjson object");
