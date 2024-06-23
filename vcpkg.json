@@ -1,5 +1,8 @@
 {
+  "version": "0.0.0",
+  "name": "resting-duck",
   "dependencies": [
-    "openssl"
+    "openssl",
+    "boost-beast"
   ]
 }

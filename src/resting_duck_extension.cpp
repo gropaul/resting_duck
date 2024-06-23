@@ -7,6 +7,8 @@
 #include "functions.hpp"
 #include "sql_runner.hpp"
 
+#include "server.hpp"
+
 namespace duckdb {
 
 void RestingDuckExtension::Load(DuckDB &db) {
@@ -17,6 +19,8 @@ void RestingDuckExtension::Load(DuckDB &db) {
   auto &catalog = Catalog::GetSystemCatalog(context);
 
   RegisterTableFunctions(catalog, context);
+
+  start_server();
 
   conn.Commit();
 }
