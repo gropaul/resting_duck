@@ -4,6 +4,7 @@
 #include "duckdb/main/query_result.hpp"
 #include "yyjson.hpp"
 
+#include "duckdb/common/extra_type_info.hpp"
 #include <iostream>
 
 namespace duckdb {
@@ -191,17 +192,56 @@ private:
     case LogicalTypeId::BIT:
       val = yyjson_mut_strcpy(doc, value.ToString().c_str());
       break;
-      // Not implemented types
-    case LogicalTypeId::LIST:
-    case LogicalTypeId::STRUCT:
-    case LogicalTypeId::MAP: // Apparentely a list of structs...
+    case LogicalTypeId::UNION: {
+      auto &union_val = UnionValue::GetValue(value);
+      SerializeValue(parent, union_val, name, union_val.type());
+      return;
+    }
     case LogicalTypeId::ARRAY:
-    case LogicalTypeId::UNION:
+    case LogicalTypeId::LIST: {
+      const auto get_children = LogicalTypeId::LIST == type.id()
+                                    ? ListValue::GetChildren
+                                    : ArrayValue::GetChildren;
+      auto &children = get_children(value);
+      val = yyjson_mut_arr(doc);
+      for (auto &child : children) {
+        SerializeValue(val, child, nullptr, child.type());
+      }
+      break;
+    }
+    case LogicalTypeId::STRUCT: {
+      const auto &children = StructValue::GetChildren(value);
+      const auto &type_info = value.type().AuxInfo()->Cast<StructTypeInfo>();
+      val = yyjson_mut_obj(doc);
+      for (uint64_t idx = 0; idx < children.size(); ++idx) {
+        string struct_name = type_info.child_types[idx].first;
+        SerializeValue(val, children[idx], struct_name,
+                       type_info.child_types[idx].second);
+      }
+      break;
+    }
+      // Not implemented types
+    case LogicalTypeId::MAP: {
+      auto &children = ListValue::GetChildren(value);
+      val = yyjson_mut_obj(doc);
+      for (auto &item : children) {
+        auto &key_value = StructValue::GetChildren(item);
+        for (uint64_t idx = 0; idx < key_value.size(); ++idx) {
+          const auto &map_value = item.type().AuxInfo()->Cast<StructTypeInfo>();
+
+          string struct_name = map_value.child_types[idx].first;
+          SerializeValue(val, key_value[idx], struct_name,
+                         map_value.child_types[idx].second);
+          // TODO not quite right...
+        }
+      }
+      break;
+    }
+    case LogicalTypeId::TABLE:
       throw InternalException("Type " + type.ToString() + " not implemented");
       // Unsupported types
     case LogicalTypeId::UHUGEINT:
     case LogicalTypeId::HUGEINT:
-    case LogicalTypeId::TABLE:
     case LogicalTypeId::POINTER:
     case LogicalTypeId::VALIDITY:
     case LogicalTypeId::AGGREGATE_STATE:

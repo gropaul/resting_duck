@@ -7,6 +7,24 @@ require resting_duck
 statement ok
 PRAGMA enable_verification
 
+statement ok
+CALL JSON_RESULT('FROM test_all_types() SELECT map');
+
+statement ok
+CALL JSON_RESULT('FROM test_all_types() SELECT fixed_varchar_array');
+
+statement ok
+CALL JSON_RESULT('FROM test_all_types() SELECT list_of_fixed_int_array');
+
+statement ok
+CALL JSON_RESULT('FROM test_all_types() SELECT struct');
+
+statement ok
+CALL JSON_RESULT('FROM test_all_types() SELECT fixed_nested_int_array');
+
+statement ok
+CALL JSON_RESULT('SELECT COLUMNS("union") from test_all_types();');
+
 query II
 CALL JSON_RESULT('SELECT 2');
 ----

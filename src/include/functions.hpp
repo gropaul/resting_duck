@@ -48,12 +48,17 @@ inline void JsonResultTf(ClientContext &context, TableFunctionInput &data,
 
   Connection conn(*context.db);
   auto result = conn.Query(data.bind_data->Cast<JsonResultFunction>().query);
+  if (result->HasError()) {
+    result->ThrowError();
+  }
+
   ResultSerializer serializer;
   serializer.Serialize(std::move(result));
 
   auto &serialization_result = *serializer.result;
-  if(!serialization_result.IsSuccess()) {
-    throw SerializationException("Failed to serialize result: " + serialization_result.Raw());
+  if (!serialization_result.IsSuccess()) {
+    throw SerializationException("Failed to serialize result: " +
+                                 serialization_result.Raw());
   }
   serialization_result.Print();
   output.SetValue(0, 0, Value(serialization_result.IsSuccess()));

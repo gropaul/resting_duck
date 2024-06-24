@@ -7,7 +7,7 @@
 #include "functions.hpp"
 #include "sql_runner.hpp"
 
-#include "server.hpp"
+// #include "server.hpp"
 
 namespace duckdb {
 
@@ -20,7 +20,7 @@ void RestingDuckExtension::Load(DuckDB &db) {
 
   RegisterTableFunctions(catalog, context);
 
-  start_server();
+  // start_server();
 
   conn.Commit();
 }
