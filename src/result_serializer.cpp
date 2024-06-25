@@ -1,5 +1,7 @@
 #include "result_serializer.hpp"
 
+#include <cmath>
+
 // ReSharper disable once CppPassValueParameterByConstReference
 std::string duckdb::ResultSerializer::SerializeInternal(unique_ptr<QueryResult> query_result) {
 	auto chunk = query_result->Fetch();
