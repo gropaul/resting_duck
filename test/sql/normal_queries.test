@@ -1,0 +1,47 @@
+# name: test/sql/all_types_seperate.test
+# description: test resting_duck extension
+# group: [resting_duck][normal_queries]
+
+require resting_duck
+
+statement ok
+PRAGMA enable_verification
+
+statement ok
+CALL JSON_RESULT('SET enable_progress_bar = true;')
+
+statement ok
+CALL JSON_RESULT('
+-- Define the CTEs with the orders and order_items data
+WITH orders AS (
+    SELECT 1 AS order_id, 100 AS total_amount
+    UNION ALL
+    SELECT 2 AS order_id, 150 AS total_amount
+),
+order_items AS (
+    SELECT 1 AS order_id, 1 AS item_id, 2 AS quantity
+    UNION ALL
+    SELECT 1, 2, 1
+    UNION ALL
+    SELECT 2, 1, 3
+    UNION ALL
+    SELECT 2, 3, 4
+),
+nested_items AS (
+    SELECT 
+        order_id, 
+        LIST(ROW(item_id, quantity)) AS items
+    FROM 
+        order_items
+    GROUP BY 
+        order_id
+)
+SELECT 
+    o.order_id,
+    o.total_amount,
+    ni.items
+FROM 
+    orders o
+JOIN 
+    nested_items ni ON o.order_id = ni.order_id;
+')

@@ -4,14 +4,14 @@
 
 namespace duckdb {
 
-class RestingDuckExtension : public Extension {
+class RestingDuckExtension final : public Extension {
 public:
-  void Load(DuckDB &db) override;
-  std::string Name() override;
-  std::string Version() const override;
+	void Load(DuckDB &db) override;
+	std::string Name() override;
+	std::string Version() const override;
 
 private:
-  static void RegisterTableFunctions(Catalog &catalog, ClientContext &context);
+	static void RegisterTableFunctions(Catalog &catalog, ClientContext &context);
 };
 
 } // namespace duckdb

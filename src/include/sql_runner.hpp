@@ -10,23 +10,23 @@ namespace duckdb {
 
 class SQLRunner {
 public:
-  explicit SQLRunner(DatabaseInstance &_instance) : instance(_instance) {}
+	explicit SQLRunner(DatabaseInstance &_instance) : instance(_instance) {
+	}
 
-  unique_ptr<QueryResult> RunSQL(const string &query) const {
-    Connection con(instance);
-    return con.Query(query);
-  }
+	unique_ptr<QueryResult> RunSQL(const string &query) const {
+		Connection con(instance);
+		return con.Query(query);
+	}
 
-  std::unique_ptr<SerializationResult>
-  RunSQLAndSerialize(const string &query) const {
-    auto result = RunSQL(query);
-    ResultSerializer serializer;
-    serializer.Serialize(std::move(result));
-    return std::move(serializer.result);
-  }
+	std::unique_ptr<SerializationResult> RunSQLAndSerialize(const string &query) const {
+		auto result = RunSQL(query);
+		ResultSerializer serializer;
+		serializer.Serialize(std::move(result));
+		return std::move(serializer.result);
+	}
 
 private:
-  DatabaseInstance &instance;
+	DatabaseInstance &instance;
 };
 
 } // namespace duckdb

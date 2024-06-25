@@ -1,0 +1,11 @@
+# name: test/sql/invalid_types_are_nulled.test
+# description: test resting_duck extension
+# group: [resting_duck]
+
+require resting_duck
+
+statement ok
+PRAGMA enable_verification
+
+statement ok
+CALL JSON_RESULT('SELECT COLUMNS("int") from test_all_types();', set_invalid_values_to_null=true);

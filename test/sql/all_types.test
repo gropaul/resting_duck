@@ -1,0 +1,178 @@
+# name: test/sql/all_types_seperate.test
+# description: test resting_duck extension
+# group: [resting_duck]
+
+require resting_duck
+
+statement ok
+PRAGMA enable_verification
+
+statement ok
+CALL JSON_RESULT('SELECT COLUMNS("bool") from test_all_types();');
+
+statement ok
+CALL JSON_RESULT('SELECT COLUMNS("tinyint") from test_all_types();');
+
+statement ok
+CALL JSON_RESULT('SELECT COLUMNS("smallint") from test_all_types();');
+
+statement error
+CALL JSON_RESULT('SELECT COLUMNS("int") from test_all_types();');
+----
+Serialization Error: Failed to serialize result: {"exception_type":"Invalid type","exception_message":"Type HUGEINT not supported"}
+
+statement ok
+CALL JSON_RESULT('SELECT COLUMNS("bigint") from test_all_types();');
+
+statement error
+CALL JSON_RESULT('SELECT COLUMNS("hugeint") from test_all_types();');
+----
+Serialization Error: Failed to serialize result: {"exception_type":"Invalid type","exception_message":"Type HUGEINT not supported"}
+
+statement error
+CALL JSON_RESULT('SELECT COLUMNS("uhugeint") from test_all_types();');
+----
+Serialization Error: Failed to serialize result: {"exception_type":"Invalid type","exception_message":"Type UHUGEINT not supported"}
+
+statement ok
+CALL JSON_RESULT('SELECT COLUMNS("utinyint") from test_all_types();');
+
+statement ok
+CALL JSON_RESULT('SELECT COLUMNS("usmallint") from test_all_types();');
+
+statement ok
+CALL JSON_RESULT('SELECT COLUMNS("uint") from test_all_types();');
+
+statement ok
+CALL JSON_RESULT('SELECT COLUMNS("ubigint") from test_all_types();');
+
+statement ok
+CALL JSON_RESULT('SELECT COLUMNS("date") from test_all_types();');
+
+statement ok
+CALL JSON_RESULT('SELECT COLUMNS("time") from test_all_types();');
+
+statement ok
+CALL JSON_RESULT('SELECT COLUMNS("timestamp") from test_all_types();');
+
+statement ok
+CALL JSON_RESULT('SELECT COLUMNS("timestamp_s") from test_all_types();');
+
+statement ok
+CALL JSON_RESULT('SELECT COLUMNS("timestamp_ms") from test_all_types();');
+
+statement ok
+CALL JSON_RESULT('SELECT COLUMNS("timestamp_ns") from test_all_types();');
+
+statement ok
+CALL JSON_RESULT('SELECT COLUMNS("time_tz") from test_all_types();');
+
+statement ok
+CALL JSON_RESULT('SELECT COLUMNS("timestamp_tz") from test_all_types();');
+
+statement ok
+CALL JSON_RESULT('SELECT COLUMNS("float") from test_all_types();');
+
+statement error
+CALL JSON_RESULT('SELECT COLUMNS("double") from test_all_types();');
+----
+Serialization Error: Failed to serialize result: {"exception_type":"Invalid type","exception_message":"NaN, Infinity, -Infinity are not supported"}
+
+statement ok
+CALL JSON_RESULT('SELECT COLUMNS("dec_4_1") from test_all_types();');
+
+statement ok
+CALL JSON_RESULT('SELECT COLUMNS("dec_9_4") from test_all_types();');
+
+statement ok
+CALL JSON_RESULT('SELECT COLUMNS("dec_18_6") from test_all_types();');
+
+statement ok
+CALL JSON_RESULT('SELECT COLUMNS("dec38_10") from test_all_types();');
+
+statement ok
+CALL JSON_RESULT('SELECT COLUMNS("uuid") from test_all_types();');
+
+statement ok
+CALL JSON_RESULT('SELECT COLUMNS("interval") from test_all_types();');
+
+statement ok
+CALL JSON_RESULT('SELECT COLUMNS("varchar") from test_all_types();');
+
+statement ok
+CALL JSON_RESULT('SELECT COLUMNS("blob") from test_all_types();');
+
+statement ok
+CALL JSON_RESULT('SELECT COLUMNS("bit") from test_all_types();');
+
+statement ok
+CALL JSON_RESULT('SELECT COLUMNS("small_enum") from test_all_types();');
+
+statement ok
+CALL JSON_RESULT('SELECT COLUMNS("medium_enum") from test_all_types();');
+
+statement ok
+CALL JSON_RESULT('SELECT COLUMNS("large_enum") from test_all_types();');
+
+statement ok
+CALL JSON_RESULT('SELECT COLUMNS("int_array") from test_all_types();');
+
+statement error
+CALL JSON_RESULT('SELECT COLUMNS("double_array") from test_all_types();');
+----
+Serialization Error: Failed to serialize result: {"exception_type":"Invalid type","exception_message":"NaN, Infinity, -Infinity are not supported"}
+
+statement ok
+CALL JSON_RESULT('SELECT COLUMNS("date_array") from test_all_types();');
+
+statement ok
+CALL JSON_RESULT('SELECT COLUMNS("timestamp_array") from test_all_types();');
+
+statement ok
+CALL JSON_RESULT('SELECT COLUMNS("timestamptz_array") from test_all_types();');
+
+statement ok
+CALL JSON_RESULT('SELECT COLUMNS("varchar_array") from test_all_types();');
+
+statement ok
+CALL JSON_RESULT('SELECT COLUMNS("nested_int_array") from test_all_types();');
+
+statement ok
+CALL JSON_RESULT('SELECT COLUMNS("struct") from test_all_types();');
+
+statement ok
+CALL JSON_RESULT('SELECT COLUMNS("struct_of_arrays") from test_all_types();');
+
+statement ok
+CALL JSON_RESULT('SELECT COLUMNS("array_of_structs") from test_all_types();');
+
+statement ok
+CALL JSON_RESULT('SELECT COLUMNS("map") from test_all_types();');
+
+statement ok
+CALL JSON_RESULT('SELECT COLUMNS("union") from test_all_types();');
+
+statement ok
+CALL JSON_RESULT('SELECT COLUMNS("fixed_int_array") from test_all_types();');
+
+statement ok
+CALL JSON_RESULT('SELECT COLUMNS("fixed_varchar_array") from test_all_types();');
+
+statement ok
+CALL JSON_RESULT('SELECT COLUMNS("fixed_nested_int_array") from test_all_types();');
+
+statement ok
+CALL JSON_RESULT('SELECT COLUMNS("fixed_nested_varchar_array") from test_all_types();');
+
+statement ok
+CALL JSON_RESULT('SELECT COLUMNS("fixed_struct_array") from test_all_types();');
+
+statement ok
+CALL JSON_RESULT('SELECT COLUMNS("struct_of_fixed_array") from test_all_types();');
+
+statement ok
+CALL JSON_RESULT('SELECT COLUMNS("fixed_array_of_int_list") from test_all_types();');
+
+statement ok
+CALL JSON_RESULT('SELECT COLUMNS("list_of_fixed_int_array") from test_all_types();');
+
