@@ -9,7 +9,8 @@ set(CMAKE_CXX_STANDARD 11)
 # remove or replace with other dependencies. Note that it should also be removed
 # from vcpkg.json to prevent needlessly installing it..
 find_package(OpenSSL REQUIRED)
-#find_package(boost_beast CONFIG REQUIRED)
+find_package(oatpp REQUIRED)
+find_package(oatpp-swagger REQUIRED)
 
 set(EXTENSION_NAME ${TARGET_NAME}_extension)
 set(LOADABLE_EXTENSION_NAME ${TARGET_NAME}_loadable_extension)
@@ -27,8 +28,8 @@ build_loadable_extension(${TARGET_NAME} " " ${EXTENSION_SOURCES})
 target_link_libraries(${EXTENSION_NAME} OpenSSL::SSL OpenSSL::Crypto)
 target_link_libraries(${LOADABLE_EXTENSION_NAME} OpenSSL::SSL OpenSSL::Crypto)
 
-#target_link_libraries(${EXTENSION_NAME} Boost::beast)
-#target_link_libraries(${LOADABLE_EXTENSION_NAME} Boost::beast)
+target_link_libraries(${EXTENSION_NAME} oatpp::oatpp oatpp::oatpp-swagger)
+target_link_libraries(${LOADABLE_EXTENSION_NAME} oatpp::oatpp oatpp::oatpp-swagger)
 
 install(
   TARGETS ${EXTENSION_NAME}

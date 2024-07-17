@@ -3,6 +3,7 @@
   "name": "resting-duck",
   "dependencies": [
     "openssl",
-    "boost-beast"
+    "oatpp",
+    "oatpp-swagger"
   ]
 }
